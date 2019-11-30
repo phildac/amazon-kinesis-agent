@@ -217,6 +217,25 @@ public class DataConverterTest {
         final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"data\":\"This is the data\"}\n";
         verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes()); 
     }
+
+    @Test
+    public void testAddMetadataConverterJSON() throws Exception {
+        final Configuration config = new Configuration(new HashMap<String, Object>() {{
+            put("optionName", "ADDMETADATA");
+            put("dataType", "JSON");
+            put("metadata", new HashMap<String, Object>() {{
+                put("key", "value");
+                put("foo", new HashMap<String, Object>() {{
+                    put("bar", "bas");
+                }});
+            }});
+        }});
+        final IDataConverter converter = new AddMetadataConverter(config);
+        final String dataStr = "{\"key\":\"This is the data\"}";
+        final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"data\":{\"key\":\"This is the data\"}}\n";
+        verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes());
+    }
+
     
     private void verifyDataConversion(IDataConverter converter, byte[] dataBin, byte[] expectedBin) throws Exception {
         ByteBuffer data = ByteBuffer.wrap(dataBin);

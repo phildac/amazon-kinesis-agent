@@ -28,6 +28,8 @@ import com.amazon.kinesis.streaming.agent.processing.exceptions.DataConversionEx
 import com.amazon.kinesis.streaming.agent.processing.interfaces.IDataConverter;
 import com.amazon.kinesis.streaming.agent.processing.interfaces.IJSONPrinter;
 import com.amazon.kinesis.streaming.agent.processing.utils.ProcessingUtilsFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * Build record as JSON object with a "metadata" key for arbitrary KV pairs
@@ -53,11 +55,14 @@ public class AddMetadataConverter implements IDataConverter {
 
     private Object metadata;
     private Boolean timestamp;
+		private Boolean isJsonData = false;
     private final IJSONPrinter jsonProducer;
 
     public AddMetadataConverter(Configuration config) {
       metadata = config.getConfigMap().get("metadata");
       timestamp = new Boolean((String) config.getConfigMap().get("timestamp"));
+			String dataType = (String) config.getConfigMap().get("dataType");
+      isJsonData = dataType == null ? false : dataType.equals("JSON");
       jsonProducer = ProcessingUtilsFactory.getPrinter(config);
     }
 
@@ -66,11 +71,26 @@ public class AddMetadataConverter implements IDataConverter {
 
         final Map<String, Object> recordMap = new LinkedHashMap<String, Object>();
         String dataStr = ByteBuffers.toString(data, StandardCharsets.UTF_8);
-
-        if (dataStr.endsWith(NEW_LINE)) {
+	
+        recordMap.put("metadata", metadata);
+				if (isJsonData) {
+					ObjectMapper mapper = new ObjectMapper();
+					TypeReference<LinkedHashMap<String,Object>> typeRef = 
+						      new TypeReference<LinkedHashMap<String,Object>>() {};
+        	LinkedHashMap<String,Object> dataObj = null;
+		    	try {
+			   	   dataObj = mapper.readValue(dataStr, typeRef);
+					} catch (Exception ex) {
+				 	   throw new DataConversionException("Error converting json source data to map", ex);
+        	}
+        	recordMap.put("data", dataObj);
+				} else {
+        	if (dataStr.endsWith(NEW_LINE)) {
             dataStr = dataStr.substring(0, (dataStr.length() - NEW_LINE.length()));
-        }
-        
+        	}
+        	recordMap.put("data", dataStr);
+				}
+
         if (timestamp.booleanValue()) {
             TimeZone tz = TimeZone.getTimeZone("UTC");
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -78,8 +98,6 @@ public class AddMetadataConverter implements IDataConverter {
             recordMap.put("ts", dateFormat.format(new Date()));
         }
 
-        recordMap.put("metadata", metadata);
-        recordMap.put("data", dataStr);
 
         String dataJson = jsonProducer.writeAsString(recordMap) + NEW_LINE;
         return ByteBuffer.wrap(dataJson.getBytes(StandardCharsets.UTF_8));

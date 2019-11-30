@@ -196,6 +196,15 @@
       <finalName>${project.artifactId}-${project.version}</finalName>
       <sourceDirectory>src</sourceDirectory>
       <scriptSourceDirectory>src</scriptSourceDirectory>
+			<testSourceDirectory>tst</testSourceDirectory>
+
+			<!--<testResources>
+  			<testResource>
+    			<directory>${project.basedir}/tst</directory>
+  			</testResource>
+			</testResources>-->
+
+
       <pluginManagement>
         <plugins>
           <plugin>
@@ -226,6 +235,16 @@
             </execution>
           </executions>
         </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0-M4</version>
+        <configuration>
+          <includes>
+            <include>**/Test*.java</include>
+          </includes>
+        </configuration>
+      </plugin>
       </plugins>
     </build>
 
