@@ -73,6 +73,7 @@ public class AddMetadataConverter implements IDataConverter {
         String dataStr = ByteBuffers.toString(data, StandardCharsets.UTF_8);
 	
         recordMap.put("metadata", metadata);
+				recordMap.put("dataType", isJsonData?"JSON":"TEXT");
 				if (isJsonData) {
 					ObjectMapper mapper = new ObjectMapper();
 					TypeReference<LinkedHashMap<String,Object>> typeRef = 

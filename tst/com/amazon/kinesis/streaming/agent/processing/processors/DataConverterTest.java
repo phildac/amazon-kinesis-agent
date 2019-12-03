@@ -214,7 +214,7 @@ public class DataConverterTest {
         }});
         final IDataConverter converter = new AddMetadataConverter(config);
         final String dataStr = "This is the data";
-        final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"data\":\"This is the data\"}\n";
+        final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"dataType\":\"TEXT\",\"data\":\"This is the data\"}\n";
         verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes()); 
     }
 
@@ -232,7 +232,7 @@ public class DataConverterTest {
         }});
         final IDataConverter converter = new AddMetadataConverter(config);
         final String dataStr = "{\"key\":\"This is the data\"}";
-        final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"data\":{\"key\":\"This is the data\"}}\n";
+        final String expectedStr = "{\"metadata\":{\"foo\":{\"bar\":\"bas\"},\"key\":\"value\"},\"dataType\":\"JSON\",\"data\":{\"key\":\"This is the data\"}}\n";
         verifyDataConversion(converter, dataStr.getBytes(), expectedStr.getBytes());
     }
 
